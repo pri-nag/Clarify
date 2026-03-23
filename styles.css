@@ -1,0 +1,14 @@
+#clarify-tooltip {
+  position: absolute;
+  background: #1e1e2e;
+  color: #ffffff;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  max-width: 280px;
+  z-index: 99999;
+  display: none;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  line-height: 1.5;
+  font-family: sans-serif;
+}
