@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clarify — Understand anything you read</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0d0d0f;
+      --surface: #13131a;
+      --surface2: #1a1a24;
+      --border: rgba(255,255,255,0.07);
+      --purple: #7c6af7;
+      --purple-dim: rgba(124,106,247,0.15);
+      --purple-glow: rgba(124,106,247,0.35);
+      --text: #f0eeff;
+      --muted: #6b6880;
+      --subtle: #9f9cb8;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      font-size: 17px;
+      overflow-x: hidden;
+      cursor: default;
+    }
+
+    /* NOISE OVERLAY */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 999;
+      opacity: 0.4;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 28px 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      background: rgba(13,13,15,0.8);
+      backdrop-filter: blur(20px);
+    }
+
+    .nav-logo {
+      font-family: 'Instrument Serif', serif;
+      font-size: 36px;
+      color: var(--text);
+      letter-spacing: -0.5px;
+    }
+
+    .nav-logo span { color: var(--purple); }
+
+    .nav-links {
+      display: flex;
+      gap: 40px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-cta {
+      background: var(--purple);
+      color: #fff !important;
+      padding: 10px 22px;
+      border-radius: 6px;
+      transition: opacity 0.2s !important;
+      font-size: 15px !important;
+    }
+
+    .nav-cta:hover { opacity: 0.85; }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1.4fr;
+      align-items: center;
+      gap: 48px;
+      padding: 120px 64px 80px;
+      position: relative;
+      overflow: hidden;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .hero-left {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .hero-right {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero-glow {
+      position: absolute;
+      width: 800px;
+      height: 800px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(124,106,247,0.1) 0%, transparent 70%);
+      top: 50%;
+      right: -100px;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--purple-dim);
+      border: 1px solid rgba(124,106,247,0.3);
+      color: var(--purple);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 7px 16px;
+      border-radius: 100px;
+      margin-bottom: 32px;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .hero-tag::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--purple);
+      animation: pulse 2s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    h1 {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(48px, 5vw, 80px);
+      line-height: 1.0;
+      letter-spacing: -2px;
+      margin-bottom: 24px;
+      animation: fadeUp 0.6s ease 0.1s both;
+      text-align: left;
+    }
+
+    h1 em {
+      font-style: italic;
+      color: var(--purple);
+    }
+
+    .hero-sub {
+      font-size: 19px;
+      color: var(--subtle);
+      max-width: 440px;
+      line-height: 1.75;
+      font-weight: 400;
+      margin-bottom: 40px;
+      animation: fadeUp 0.6s ease 0.2s both;
+      text-align: left;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      animation: fadeUp 0.6s ease 0.3s both;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--purple);
+      color: #fff;
+      text-decoration: none;
+      padding: 16px 32px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      transition: all 0.2s;
+      letter-spacing: 0.2px;
+    }
+
+    .btn-primary:hover {
+      background: #6a58e0;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 30px var(--purple-glow);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--subtle);
+      text-decoration: none;
+      padding: 16px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+      color: var(--text);
+      border-color: rgba(255,255,255,0.15);
+    }
+
+    /* DEMO PREVIEW */
+    .demo-preview {
+      position: relative;
+      animation: fadeUp 0.8s ease 0.4s both;
+      width: 100%;
+    }
+
+    .browser-mock {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      width: 100%;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.5), 0 0 0 1px var(--border);
+    }
+
+    .browser-bar {
+      background: var(--surface2);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .browser-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .dot-red { background: #ff5f57; }
+    .dot-yellow { background: #febc2e; }
+    .dot-green { background: #28c840; }
+
+    .browser-url {
+      flex: 1;
+      background: var(--bg);
+      border-radius: 6px;
+      padding: 5px 12px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    .browser-content {
+      padding: 28px 32px;
+      font-size: 16px;
+      line-height: 1.85;
+      color: var(--subtle);
+      position: relative;
+      min-height: 200px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .browser-text { flex: 1; }
+
+    .browser-content p { margin-bottom: 8px; }
+
+    .highlight {
+      background: rgba(124,106,247,0.25);
+      border-radius: 3px;
+      padding: 1px 4px;
+      color: #c4bbff;
+      cursor: pointer;
+    }
+
+    .tooltip-mock {
+      background: #1e1e2e;
+      border: 1px solid rgba(124,106,247,0.3);
+      border-radius: 10px;
+      padding: 14px 16px;
+      width: 220px;
+      flex-shrink: 0;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      animation: tooltipAppear 0.4s ease 1.2s both;
+      align-self: start;
+    }
+
+    @keyframes tooltipAppear {
+      from { opacity: 0; transform: translateY(8px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .tooltip-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .tooltip-label {
+      font-size: 11px;
+      color: var(--purple);
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .tooltip-close {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .tooltip-text {
+      font-size: 13px;
+      color: #c4c0e0;
+      line-height: 1.65;
+      font-family: 'DM Mono', monospace;
+      font-weight: 300;
+    }
+
+    /* SECTION BASE */
+    section {
+      padding: 100px 64px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .section-tag {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--purple);
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(40px, 5vw, 60px);
+      line-height: 1.1;
+      letter-spacing: -1px;
+      margin-bottom: 16px;
+    }
+
+    .section-sub {
+      font-size: 18px;
+      color: var(--subtle);
+      line-height: 1.75;
+      max-width: 520px;
+      font-weight: 400;
+    }
+
+    /* HOW IT WORKS */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      margin-top: 56px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .step {
+      background: var(--surface);
+      padding: 36px 28px;
+      position: relative;
+      transition: background 0.2s;
+    }
+
+    .step:hover { background: var(--surface2); }
+
+    .step-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+    }
+
+    .step-icon {
+      font-size: 32px;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .step h3 {
+      font-size: 19px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+
+    .step p {
+      font-size: 15px;
+      color: var(--subtle);
+      line-height: 1.7;
+      font-weight: 400;
+    }
+
+    /* SCREENSHOTS */
+    .screenshots {
+      margin-top: 56px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .screenshot-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .screenshot-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .screenshot-card:first-child {
+      grid-column: span 2;
+    }
+
+    .sc-header {
+      background: var(--surface2);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sc-dots { display: flex; gap: 5px; }
+    .sc-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
+
+    .sc-body {
+      padding: 24px;
+      min-height: 160px;
+      font-size: 13px;
+      color: var(--subtle);
+      line-height: 1.7;
+      position: relative;
+    }
+
+    .sc-caption {
+      padding: 12px 16px;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      font-family: 'DM Mono', monospace;
+    }
+
+    /* INSTALL */
+    .install-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      margin-top: 56px;
+      align-items: start;
+    }
+
+    .install-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .install-step {
+      display: flex;
+      gap: 16px;
+      padding: 16px;
+      border-radius: 10px;
+      transition: background 0.2s;
+      align-items: flex-start;
+    }
+
+    .install-step:hover { background: var(--surface); }
+
+    .install-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--purple-dim);
+      border: 1px solid rgba(124,106,247,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--purple);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .install-content h4 {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+
+    .install-content p {
+      font-size: 15px;
+      color: var(--subtle);
+      line-height: 1.65;
+      font-weight: 400;
+    }
+
+    .install-content code {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: var(--purple);
+    }
+
+    .install-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      position: sticky;
+      top: 100px;
+    }
+
+    .install-card h3 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .install-card p {
+      font-size: 15px;
+      color: var(--subtle);
+      line-height: 1.65;
+      margin-bottom: 20px;
+      font-weight: 400;
+    }
+
+    .install-card .btn-primary {
+      width: 100%;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+
+    .install-card .btn-secondary {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .free-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 16px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .free-badge::before, .free-badge::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .footer-logo {
+      font-family: 'Instrument Serif', serif;
+      font-size: 20px;
+      color: var(--muted);
+    }
+
+    .footer-logo span { color: var(--purple); }
+
+    .footer-text {
+      font-size: 15px;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .footer-link {
+      color: var(--purple);
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 600;
+      transition: opacity 0.2s;
+    }
+
+    .footer-link:hover { opacity: 0.75; }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: var(--border);
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 900px) {
+      nav { padding: 16px 20px; }
+      .nav-links { display: none; }
+      .hero { grid-template-columns: 1fr; padding: 120px 24px 60px; text-align: center; }
+      .hero-left { align-items: center; }
+      .hero-sub { text-align: center; }
+      h1 { text-align: center; }
+      .steps { grid-template-columns: 1fr; }
+      .screenshots { grid-template-columns: 1fr; }
+      .screenshots .screenshot-card:first-child { grid-column: span 1; }
+      .install-grid { grid-template-columns: 1fr; }
+      footer { flex-direction: column; gap: 12px; text-align: center; }
+      section { padding: 80px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">Clarify <span>✦</span></div>
+    <ul class="nav-links">
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#demo">Demo</a></li>
+      <li><a href="#install" class="nav-cta">Install free</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-left">
+      <div class="hero-tag">AI Chrome Extension</div>
+      <h1>Understand<br><em>anything</em><br>you read</h1>
+      <p class="hero-sub">Select any word or sentence on any webpage. Clarify explains it in context — not a dictionary definition, but what it actually means <em>right there</em>.</p>
+      <div class="hero-actions">
+        <a href="#install" class="btn-primary">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 16l-4-4h3V4h2v8h3l-4 4z"/><path d="M4 18h16v2H4z"/></svg>
+          Install for free
+        </a>
+        <a href="https://github.com/pri-nag/Clarify" target="_blank" class="btn-secondary">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.483 0-.237-.009-.868-.013-1.703-2.782.605-3.369-1.342-3.369-1.342-.454-1.154-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836a9.59 9.59 0 012.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .268.18.58.688.482C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="demo-preview">
+        <div class="browser-mock">
+          <div class="browser-bar">
+            <div class="browser-dots">
+              <div class="dot dot-red"></div>
+              <div class="dot dot-yellow"></div>
+              <div class="dot dot-green"></div>
+            </div>
+            <div class="browser-url">en.wikipedia.org/wiki/Photosynthesis</div>
+          </div>
+          <div class="browser-content">
+            <div class="browser-text">
+              <p>Photosynthesis is a process used by plants and other organisms to convert light energy into chemical energy that can be stored and later released to fuel the organism's <span class="highlight">metabolic</span> activities.</p>
+              <p style="opacity:0.4; margin-top: 12px;">This energy is stored in carbohydrate molecules, such as sugars and starches, which are synthesized from carbon dioxide and water — these processes require energy input from light...</p>
+            </div>
+            <div class="tooltip-mock">
+              <div class="tooltip-header">
+                <span class="tooltip-label">Clarify ✦</span>
+                <span class="tooltip-close">✕</span>
+              </div>
+              <p class="tooltip-text">Metabolic activities refer to all the chemical processes happening inside the plant that keep it alive — like growing, reproducing, and responding to its environment.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- HOW IT WORKS -->
+  <section id="how">
+    <div class="reveal">
+      <div class="section-tag">How it works</div>
+      <h2 class="section-title">Three steps.<br>Zero friction.</h2>
+      <p class="section-sub">No switching tabs. No copy-pasting into search. Just select and understand.</p>
+    </div>
+
+    <div class="steps reveal">
+      <div class="step">
+        <div class="step-num">01</div>
+        <span class="step-icon">🔍</span>
+        <h3>Select any text</h3>
+        <p>Highlight any word, phrase, or sentence you don't understand on any webpage.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <span class="step-icon">⚡</span>
+        <h3>AI reads the page</h3>
+        <p>Clarify reads what you're reading — so the explanation fits the context, not just the dictionary.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <span class="step-icon">💡</span>
+        <h3>Understand instantly</h3>
+        <p>A clean tooltip appears with a one-sentence explanation. No tab switching. No interruption.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- DEMO / SCREENSHOTS -->
+  <section id="demo">
+    <div class="reveal">
+      <div class="section-tag">See it in action</div>
+      <h2 class="section-title">Context-aware.<br>Not just definitions.</h2>
+      <p class="section-sub">The same word means different things in different articles. Clarify always explains in context.</p>
+    </div>
+
+    <div class="screenshots reveal">
+      <div class="screenshot-card">
+        <div class="sc-header">
+          <div class="sc-dots"><div class="sc-dot"></div><div class="sc-dot"></div><div class="sc-dot"></div></div>
+          <span style="font-size:11px; color: var(--muted); font-family: 'DM Mono', monospace; margin-left: 8px;">Wikipedia — Batman</span>
+        </div>
+        <div class="sc-body">
+          <p>...Batman is <span class="highlight" style="background:rgba(124,106,247,0.2); color:#c4bbff; border-radius:3px; padding: 1px 4px;">tempered</span> by the murder of his parents, driving him to fight crime...</p>
+          <div style="position: absolute; bottom: 20px; left: 160px; background: #1e1e2e; border: 1px solid rgba(124,106,247,0.3); border-radius: 10px; padding: 10px 12px; max-width: 220px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);">
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+              <span style="font-size:9px; color:var(--purple); font-weight:700; letter-spacing:0.5px;">CLARIFY ✦</span>
+              <span style="font-size:10px; color:var(--muted);">✕</span>
+            </div>
+            <p style="font-size:11px; color:#c4c0e0; line-height:1.5; font-family:'DM Mono',monospace; font-weight:300;">Batman's rage and grief are kept controlled and directed toward justice rather than becoming destructive.</p>
+          </div>
+        </div>
+        <div class="sc-caption">→ "tempered" explained in the context of Batman's character</div>
+      </div>
+
+      <div class="screenshot-card">
+        <div class="sc-header">
+          <div class="sc-dots"><div class="sc-dot"></div><div class="sc-dot"></div><div class="sc-dot"></div></div>
+          <span style="font-size:11px; color: var(--muted); font-family: 'DM Mono', monospace; margin-left: 8px;">Popup — API Key setup</span>
+        </div>
+        <div class="sc-body" style="display:flex; align-items:center; justify-content:center;">
+          <div style="background:#1e1e2e; border:1px solid rgba(124,106,247,0.2); border-radius:12px; padding:20px; width:200px;">
+            <div style="font-size:15px; font-weight:700; margin-bottom:3px;">Clarify ✦</div>
+            <div style="font-size:10px; color:var(--muted); margin-bottom:16px;">Select text to explain it</div>
+            <div style="font-size:10px; color:var(--muted); margin-bottom:5px;">Your Groq API Key</div>
+            <div style="background:#2a2a3e; border:1px solid rgba(124,106,247,0.3); border-radius:6px; padding:7px 10px; font-size:10px; color:var(--muted); font-family:'DM Mono',monospace; margin-bottom:10px;">gsk_••••••••••••</div>
+            <div style="background:var(--purple); border-radius:6px; padding:7px; text-align:center; font-size:11px; font-weight:700; color:#fff;">Save Key</div>
+          </div>
+        </div>
+        <div class="sc-caption">→ Simple one-time API key setup</div>
+      </div>
+
+      <div class="screenshot-card">
+        <div class="sc-header">
+          <div class="sc-dots"><div class="sc-dot"></div><div class="sc-dot"></div><div class="sc-dot"></div></div>
+          <span style="font-size:11px; color: var(--muted); font-family: 'DM Mono', monospace; margin-left: 8px;">Any webpage — works everywhere</span>
+        </div>
+        <div class="sc-body">
+          <p style="font-size:13px;">Works on Wikipedia, news articles, research papers, blog posts — any webpage with text.</p>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:16px;">
+            <span style="background:var(--surface2); border:1px solid var(--border); border-radius:100px; padding:4px 12px; font-size:11px; color:var(--subtle);">Wikipedia</span>
+            <span style="background:var(--surface2); border:1px solid var(--border); border-radius:100px; padding:4px 12px; font-size:11px; color:var(--subtle);">News sites</span>
+            <span style="background:var(--surface2); border:1px solid var(--border); border-radius:100px; padding:4px 12px; font-size:11px; color:var(--subtle);">Research papers</span>
+            <span style="background:var(--surface2); border:1px solid var(--border); border-radius:100px; padding:4px 12px; font-size:11px; color:var(--subtle);">Blog posts</span>
+            <span style="background:var(--surface2); border:1px solid var(--border); border-radius:100px; padding:4px 12px; font-size:11px; color:var(--subtle);">Docs</span>
+          </div>
+        </div>
+        <div class="sc-caption">→ Injected into any webpage via content scripts</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- INSTALL -->
+  <section id="install">
+    <div class="reveal">
+      <div class="section-tag">Get started</div>
+      <h2 class="section-title">Install in<br>60 seconds.</h2>
+      <p class="section-sub">Free forever. No account needed. Just a free API key from Groq.</p>
+    </div>
+
+    <div class="install-grid reveal">
+      <div class="install-steps">
+        <div class="install-step">
+          <div class="install-num">1</div>
+          <div class="install-content">
+            <h4>Clone the repo</h4>
+            <p>Download from GitHub or clone with <code>git clone</code></p>
+          </div>
+        </div>
+        <div class="install-step">
+          <div class="install-num">2</div>
+          <div class="install-content">
+            <h4>Load in Chrome</h4>
+            <p>Go to <code>chrome://extensions</code> → Enable Developer Mode → Load Unpacked → select the folder</p>
+          </div>
+        </div>
+        <div class="install-step">
+          <div class="install-num">3</div>
+          <div class="install-content">
+            <h4>Get your free API key</h4>
+            <p>Sign up at <code>console.groq.com</code> → API Keys → Create API Key. It's completely free.</p>
+          </div>
+        </div>
+        <div class="install-step">
+          <div class="install-num">4</div>
+          <div class="install-content">
+            <h4>Enter key in Clarify</h4>
+            <p>Click the Clarify icon in your toolbar, paste your key, click Save.</p>
+          </div>
+        </div>
+        <div class="install-step">
+          <div class="install-num">5</div>
+          <div class="install-content">
+            <h4>Select any text</h4>
+            <p>Go to any webpage, select a word or sentence, and watch the magic happen.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="install-card">
+        <h3>Clarify ✦</h3>
+        <p>Free and open source. Built with JavaScript, Chrome Extension APIs, and Groq's Llama 3 model.</p>
+        <a href="https://github.com/pri-nag/Clarify" target="_blank" class="btn-primary">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.483 0-.237-.009-.868-.013-1.703-2.782.605-3.369-1.342-3.369-1.342-.454-1.154-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836a9.59 9.59 0 012.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .268.18.58.688.482C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+          View on GitHub
+        </a>
+        <a href="https://console.groq.com" target="_blank" class="btn-secondary">
+          Get free API key →
+        </a>
+        <div class="free-badge">100% free · open source</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">Clarify <span>✦</span></div>
+    <p class="footer-text">Built by <a href="https://github.com/pri-nag" target="_blank" class="footer-link">pri-nag</a></p>
+    <a href="https://github.com/pri-nag/Clarify" target="_blank" class="footer-link">GitHub →</a>
+  </footer>
+
+  <script>
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal')
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 100)
+        }
+      })
+    }, { threshold: 0.1 })
+    reveals.forEach(el => observer.observe(el))
+  </script>
+
+</body>
+</html>
