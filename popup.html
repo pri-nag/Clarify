@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        width: 300px;
+        padding: 20px;
+        font-family: sans-serif;
+        background: #1e1e2e;
+        color: #ffffff;
+      }
+
+      .logo {
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 4px;
+        color: #ffffff;
+      }
+
+      .tagline {
+        font-size: 12px;
+        color: #888;
+        margin-bottom: 20px;
+      }
+
+      label {
+        font-size: 12px;
+        color: #aaa;
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      input {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid #333;
+        background: #2a2a3e;
+        color: #fff;
+        font-size: 13px;
+        outline: none;
+        margin-bottom: 12px;
+      }
+
+      input:focus {
+        border-color: #7c6af7;
+      }
+
+      button {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: none;
+        background: #7c6af7;
+        color: #fff;
+        font-size: 14px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      button:hover {
+        background: #6a58e0;
+      }
+
+      .status {
+        margin-top: 12px;
+        font-size: 12px;
+        text-align: center;
+        color: #aaa;
+        min-height: 18px;
+      }
+
+      .status.success {
+        color: #4caf50;
+      }
+
+      .divider {
+        border: none;
+        border-top: 1px solid #333;
+        margin: 16px 0;
+      }
+
+      .hint {
+        font-size: 11px;
+        color: #666;
+        line-height: 1.6;
+      }
+
+      .hint a {
+        color: #7c6af7;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="logo">Clarify ✦</div>
+    <div class="tagline">Select any text on a webpage to explain it in context</div>
+
+    <label>Your Groq API Key</label>
+    <input type="password" id="api-key-input" placeholder="gsk_..." />
+    <button id="save-btn">Save Key</button>
+    <div class="status" id="status"></div>
+
+    <hr class="divider">
+
+    <div class="hint">
+      Get a free key at 
+      <a href="https://console.groq.com" target="_blank">console.groq.com</a>
+      → API Keys → Create API Key
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

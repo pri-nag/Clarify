@@ -2,13 +2,39 @@
   position: absolute;
   background: #1e1e2e;
   color: #ffffff;
-  padding: 10px 14px;
+  padding: 12px 14px;
   border-radius: 10px;
   font-size: 13px;
-  max-width: 280px;
+  max-width: 260px;
   z-index: 99999;
   display: none;
   box-shadow: 0 4px 20px rgba(0,0,0,0.3);
   line-height: 1.5;
   font-family: sans-serif;
 }
+
+#clarify-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+#clarify-label {
+  font-size: 10px;
+  color: #7c6af7;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+#clarify-close {
+  cursor: pointer;
+  font-size: 11px;
+  color: #888;
+  padding: 2px 4px;
+}
+
+#clarify-close:hover { color: #fff; }
+
+#clarify-text { margin: 0; font-size: 13px; color: #ffffff; }

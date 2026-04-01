@@ -1,39 +1,45 @@
 console.log("background.js loaded")
 
-const GEMINI_API_KEY = "AIzaSyDsgRXFHE8RM-HMrc34jsWdDJHJsXfdekk"
-
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log("message received:", message)
   if (message.type === "EXPLAIN") {
-    console.log("explaining:", message.selected)
     const { selected, pageContext } = message
 
-    const prompt = `
-      You are a helpful assistant for students.
-      A student is reading a page that contains this context:
-      "${pageContext}"
-      
-      They selected this text: "${selected}"
-      
-      In 2-3 sentences, explain what this means in the context 
-      of what they are reading. Use simple plain English.
-      No jargon. Be direct and helpful.
-    `
+    chrome.storage.local.get("groqApiKey", (data) => {
+      const GROQ_API_KEY = data.groqApiKey
 
-    fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_API_KEY}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }]
+      if (!GROQ_API_KEY) {
+        sendResponse({ explanation: "Please add your Groq API key by clicking the Clarify icon." })
+        return
+      }
+
+      const prompt = `
+        You are a helpful assistant for students.
+        A student is reading this text: "${pageContext}"
+        They selected: "${selected}"
+        Explain in MAXIMUM 1 sentence what "${selected}" means in this context.
+        Be direct. No intro phrases like "In this context" or "This means".
+        Just the explanation itself.
+      `
+
+      fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${GROQ_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: "llama-3.1-8b-instant",
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: 80
+        })
       })
+      .then(res => res.json())
+      .then(data => {
+        const explanation = data.choices?.[0]?.message?.content || "Could not explain this."
+        sendResponse({ explanation })
+      })
+      .catch(() => sendResponse({ explanation: "API error. Try again." }))
     })
-    .then(res => res.json())
-    .then(data => {
-      console.log("Gemini response:", JSON.stringify(data))
-      const explanation = data.candidates?.[0]?.content?.parts?.[0]?.text || "Could not explain this."
-      sendResponse({ explanation })
-    })
-    .catch(() => sendResponse({ explanation: "API error. Try again." }))
 
     return true
   }
