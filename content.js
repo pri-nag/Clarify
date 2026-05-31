@@ -36,6 +36,12 @@ document.addEventListener("mouseup", (e) => {
     tooltip.style.left = e.pageX + 12 + "px"
     tooltip.style.top = e.pageY + 12 + "px"
 
+    // Auto close after 7 seconds
+    clearTimeout(window.clarifyTimer)
+    window.clarifyTimer = setTimeout(() => {
+      tooltip.style.display = "none"
+    }, 7000)
+
     const pageContext = document.querySelector('p')
       ? Array.from(document.querySelectorAll('p'))
           .map(p => p.innerText)
@@ -62,6 +68,13 @@ document.addEventListener("mouseup", (e) => {
       explanationText.textContent = "Please refresh the page."
     }
   } else {
+    tooltip.style.display = "none"
+  }
+})
+
+// Close on click outside
+document.addEventListener("mousedown", (e) => {
+  if (!tooltip.contains(e.target)) {
     tooltip.style.display = "none"
   }
 })
